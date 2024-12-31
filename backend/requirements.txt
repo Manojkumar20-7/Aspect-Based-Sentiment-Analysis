@@ -1,0 +1,9 @@
+flask
+flask_cors
+transformers
+torch
+spacy
+re
+json
+prometheus_client
+prometheus_flask_exporter

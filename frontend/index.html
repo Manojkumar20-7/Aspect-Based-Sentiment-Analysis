@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aspect-Based Sentiment Analysis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #3b5998;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 50px auto;
+            background-color: white;
+            padding: 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h2 {
+            color: #3b5998;
+        }
+        .input-container {
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: vertical;
+            min-height: 150px;
+        }
+        .btn {
+            background-color: #3b5998;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #2d4373;
+        }
+        .result-table {
+            width: 100%;
+            margin-top: 30px;
+            border-collapse: collapse;
+        }
+        .result-table th, .result-table td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        .result-table th {
+            background-color: #f5f5f5;
+        }
+        .result-table td {
+            background-color: #f9f9f9;
+        }
+        .result-table .highlight-positive {
+            background-color: #d4edda;
+        }
+        .result-table .highlight-negative {
+            background-color: #f8d7da;
+        }
+        .summary {
+            margin-top: 30px;
+            font-size: 18px;
+            color: #555;
+        }
+        .percentage {
+            font-weight: bold;
+        }
+        .loading {
+            text-align: center;
+            font-size: 18px;
+            color: #3b5998;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Aspect-Based Sentiment Analysis</h1>
+</header>
+
+<div class="container">
+    <h2>Enter Product Review</h2>
+    <div class="input-container">
+        <textarea id="reviewText" placeholder="Write your review here..."></textarea>
+    </div>
+    <button class="btn" onclick="analyzeReview()">Analyze Review</button>
+
+    <div class="loading" id="loadingMessage">Analyzing...</div>
+
+    <div id="resultContainer" style="display:none;">
+        <h2>Analysis Result</h2>
+        <div class="summary">
+            <p><strong>Overall Sentiment: </strong><span id="overallSentiment">-</span></p>
+            <p><strong>Positive Sentiment: </strong><span id="positivePercentage">-</span>%</p>
+            <p><strong>Negative Sentiment: </strong><span id="negativePercentage">-</span>%</p>
+        </div>
+
+        <table class="result-table" id="analysisTable">
+            <thead>
+                <tr>
+                    <th>Sentence</th>
+                    <th>Aspects</th>
+                    <th>Sentiment</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function analyzeReview() {
+        const reviewText = document.getElementById('reviewText').value.trim();
+
+        if (!reviewText) {
+            alert("Please enter a review.");
+            return;
+        }
+
+        // Show loading message
+        document.getElementById('loadingMessage').style.display = 'block';
+        document.getElementById('resultContainer').style.display = 'none';
+
+        const data = { review: reviewText };
+
+        fetch('http://127.0.0.1:5000/analyze', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('resultContainer').style.display = 'block';
+
+            // Populate the overall sentiment
+            document.getElementById('overallSentiment').textContent = data.overall_sentiment;
+            document.getElementById('positivePercentage').textContent = data.sentiment_percentages.positive_percentage;
+            document.getElementById('negativePercentage').textContent = data.sentiment_percentages.negative_percentage;
+
+            // Populate the analysis table
+            const analysisTable = document.getElementById('analysisTable').getElementsByTagName('tbody')[0];
+            analysisTable.innerHTML = ''; // Clear existing data
+
+            data.analysis.forEach(result => {
+                const row = analysisTable.insertRow();
+
+                const sentenceCell = row.insertCell(0);
+                sentenceCell.textContent = result.sentence;
+
+                const aspectsCell = row.insertCell(1);
+                aspectsCell.textContent = result.aspects.join(', ');
+
+                const sentimentCell = row.insertCell(2);
+                sentimentCell.textContent = result.sentiment;
+
+                // Highlight sentiment cells
+                if (result.sentiment === 'POSITIVE') {
+                    sentimentCell.classList.add('highlight-positive');
+                } else if (result.sentiment === 'NEGATIVE') {
+                    sentimentCell.classList.add('highlight-negative');
+                }
+            });
+        })
+        .catch(error => {
+            document.getElementById('loadingMessage').style.display = 'none';
+            alert("Error during analysis. Please try again.");
+            console.error(error);
+        });
+    }
+</script>
+
+</body>
+</html>
