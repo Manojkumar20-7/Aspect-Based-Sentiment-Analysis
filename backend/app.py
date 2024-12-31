@@ -88,10 +88,6 @@ def sentiment_percentage(sentiments):
         "negative_percentage": round(negative_percentage, 2)
     }
 
-@app.route("/",methods=["GET"])
-def home():
-    return render_template('../frontend/index.html')
-
 # Define the endpoint for aspect-based sentiment analysis
 @app.route("/analyze", methods=["POST"])
 def analyze():
