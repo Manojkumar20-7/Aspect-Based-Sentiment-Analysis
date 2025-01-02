@@ -1,0 +1,78 @@
+body {
+  background-color: #f9f9f9;
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
+.app {
+  text-align: center;
+  padding: 20px;
+}
+
+textarea {
+  width: 80%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+button {
+  padding: 10px 20px;
+  margin: 10px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.gauge {
+  width: 200px;
+  margin: 20px auto;
+}
+
+.aspect-table {
+  width: 90%;
+  margin: 20px auto;
+  border-collapse: collapse;
+}
+
+.aspect-table th,
+.aspect-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.aspect-table th {
+  background-color: #f4f4f4;
+}
+
+.positive {
+  color: green;
+}
+
+.negative {
+  color: red;
+}
+
+.feedback {
+  margin-top: 20px;
+}
+
+.star {
+  font-size: 30px;
+  cursor: pointer;
+  color: #ccc;
+}
+
+.star.selected {
+  color: gold;
+}

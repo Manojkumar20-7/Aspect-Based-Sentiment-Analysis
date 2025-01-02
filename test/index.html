@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+        }
+
+        .loading {
+            margin-top: 20px;
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        .error {
+            margin-top: 20px;
+            color: red;
+            font-size: 1.2em;
+        }
+
+        .result {
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        #analysis {
+            margin-top: 20px;
+        }
+
+        #analysis .sentence {
+            margin-bottom: 20px;
+        }
+
+        #analysis p {
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Sentiment Analysis</h1>
+        <textarea id="review" rows="5" placeholder="Enter your review..."></textarea>
+        <button id="analyzeBtn">Analyze</button>
+
+        <div id="loading" class="loading" style="display:none;">Analyzing...</div>
+        <div id="error" class="error" style="display:none;"></div>
+
+        <div id="result" class="result" style="display:none;">
+            <h2>Review Analysis</h2>
+            <p><strong>Overall Sentiment:</strong> <span id="overallSentiment"></span></p>
+            <p><strong>Sentiment Percentages:</strong> Positive: <span id="positivePercentage"></span>% | Negative: <span id="negativePercentage"></span>%</p>
+            <div id="analysis"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("analyzeBtn").addEventListener("click", analyzeReview);
+
+        function analyzeReview() {
+            const review = document.getElementById("review").value;
+            const loading = document.getElementById("loading");
+            const error = document.getElementById("error");
+            const result = document.getElementById("result");
+            const overallSentiment = document.getElementById("overallSentiment");
+            const positivePercentage = document.getElementById("positivePercentage");
+            const negativePercentage = document.getElementById("negativePercentage");
+            const analysisDiv = document.getElementById("analysis");
+
+            if (!review.trim()) return;
+
+            // Clear previous results and show loading
+            result.style.display = "none";
+            error.style.display = "none";
+            loading.style.display = "block";
+            analysisDiv.innerHTML = "";
+
+            fetch("http://localhost:5000/analyze", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ review })
+            })
+            .then(response => response.json())
+            .then(data => {
+                loading.style.display = "none";
+
+                if (data.error) {
+                    error.style.display = "block";
+                    error.textContent = data.error;
+                } else {
+                    // Display results
+                    overallSentiment.textContent = data.overall_sentiment;
+                    positivePercentage.textContent = data.sentiment_percentages.positive_percentage;
+                    negativePercentage.textContent = data.sentiment_percentages.negative_percentage;
+
+                    data.analysis.forEach(item => {
+                        const sentenceDiv = document.createElement("div");
+                        sentenceDiv.classList.add("sentence");
+                        
+                        sentenceDiv.innerHTML = `
+                            <p><strong>Sentence:</strong> ${item.sentence}</p>
+                            <p><strong>Aspects:</strong> ${item.aspects.join(', ')}</p>
+                            <p><strong>Sentiment:</strong> ${item.sentiment}</p>
+                            <p><strong>Sentiment Words:</strong> ${item.sentiment_words.join(', ')}</p>
+                        `;
+                        analysisDiv.appendChild(sentenceDiv);
+                    });
+
+                    result.style.display = "block";
+                }
+            })
+            .catch(err => {
+                loading.style.display = "none";
+                error.style.display = "block";
+                error.textContent = "Error analyzing review";
+            });
+        }
+    </script>
+
+</body>
+</html>
